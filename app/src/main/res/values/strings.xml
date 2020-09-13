@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">GPSApp</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
+    <string name="button_sign_in">Sign in</string>
+    <string name="button_register">Register</string>
+</resources>
