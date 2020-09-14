@@ -1,13 +1,13 @@
 package online.litterae.gps;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.Toast;
@@ -19,8 +19,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.google.gson.Gson;
 
 import java.util.List;
+import java.util.Objects;
 
-import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.BehaviorSubject;
 import online.litterae.gps.application.App;
@@ -41,42 +41,27 @@ import static online.litterae.gps.utils.Const.PARAM_MIN_DISTANCE;
 
 public class GpsService extends Service {
     private StorageManager storageManager = StorageManager.getInstance();
-    private BehaviorSubject<List<MyLocation>> storedLocationsProvider
-            = storageManager.getLocationsProvider();
-    private CompositeDisposable disposables = new CompositeDisposable();
+    private BehaviorSubject<List<MyLocation>> storedLocationsProvider = storageManager.getLocationsProvider();
+    private Disposable sendLocationsDisposable;
 
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         int command = intent.getIntExtra(PARAM_COMMAND, 0);
         switch (command) {
             case COMMAND_CONNECT_SERVICE:
-                Disposable sendLocationsDisposable
-                        = storedLocationsProvider.subscribe(GpsService::sendLocations);
-                disposables.add(sendLocationsDisposable);
+                sendLocationsDisposable = storedLocationsProvider.subscribe(GpsService::sendLocations);
                 break;
 
             case COMMAND_SAVE_LOCATION:
                 LocationManager locationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                        != PackageManager.PERMISSION_GRANTED
-                        && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(getApplicationContext(), "Error: permission for accessing location not granted", Toast.LENGTH_SHORT).show();
-                }
-                if (Build.VERSION.SDK_INT < 30) {
-                    LocationListener locationListener = new GpsLocationListener();
-                    locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, locationListener, null);
-                } else {
-                    locationManager.getCurrentLocation(LocationManager.GPS_PROVIDER,
-                            null,
-                            getMainExecutor(),
-                            this::storeLocation);
-                }
+                LocationListener locationListener = new GpsLocationListener();
+                Objects.requireNonNull(locationManager).requestSingleUpdate(LocationManager.GPS_PROVIDER, locationListener, null);
                 break;
 
             case COMMAND_WIPE_DATA:
@@ -92,7 +77,7 @@ public class GpsService extends Service {
 
     @Override
     public void onDestroy() {
-        disposables.dispose();
+        sendLocationsDisposable.dispose();
         super.onDestroy();
     }
 

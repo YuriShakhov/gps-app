@@ -3,6 +3,7 @@ package online.litterae.gps.storage;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.BehaviorSubject;
@@ -17,8 +18,8 @@ public class StorageManager {
         myLocationDao = App.getDatabase().myLocationDao();
         locationsProvider = BehaviorSubject.createDefault(new ArrayList<>());
         myLocationDao.getLocations()
-                .observeOn(Schedulers.io())//проверить!!!
-                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(locationsProvider);
     }
 
@@ -34,10 +35,12 @@ public class StorageManager {
     }
 
     public void addLocation(MyLocation myLocation) {
-        new Thread(() -> myLocationDao.insert(myLocation)).start();
+        Completable.fromAction(() -> myLocationDao.insert(myLocation))
+                .subscribeOn(Schedulers.io()).subscribe();
     }
 
     public void wipeData() {
-        new Thread(() -> myLocationDao.wipeData()).start();
+        Completable.fromAction(() -> myLocationDao.wipeData())
+                .subscribeOn(Schedulers.io()).subscribe();
     }
 }

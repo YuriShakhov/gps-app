@@ -3,42 +3,38 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:cardView="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="56dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginBottom="8dp"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
-    app:cardCornerRadius="4dp"
-    app:cardElevation="4dp"
+    android:layout_height="@dimen/card_location_height"
+    android:layout_marginTop="@dimen/card_location_margin_top_bottom"
+    android:layout_marginBottom="@dimen/card_location_margin_top_bottom"
+    android:layout_marginStart="@dimen/card_location_margin_start_end"
+    android:layout_marginEnd="@dimen/card_location_margin_start_end"
+    app:cardCornerRadius="@dimen/card_location_corner_radius"
+    app:cardElevation="@dimen/card_location_elevation"
     >
 
 <LinearLayout
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="2dp">
+    android:layout_gravity="center_vertical"
+    >
 
     <ImageView
-        android:layout_width="32dp"
+        android:layout_width="0dp"
         android:layout_height="32dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginStart="32dp"
+        android:layout_weight="1"
         android:src="@drawable/ic_location"
-        app:tint="#ff0000"/>
+        app:tint="@color/colorLocationIcon"
+        android:contentDescription="@string/description_location_icon" />
 
     <TextView
         android:id="@+id/tv_location"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:layout_margin="8dp"/>
+        android:layout_weight="3"
+        android:gravity="start"
+        android:layout_margin="@dimen/tv_location_margin"/>
 
 </LinearLayout>
 

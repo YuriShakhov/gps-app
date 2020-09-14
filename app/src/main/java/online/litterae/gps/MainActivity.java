@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progress_bar);
         noLocationsTextView = findViewById(R.id.no_locations_textview);
 
-        recycler = findViewById(R.id.locations_recycler);
+        recycler = findViewById(R.id.locations_list);
         recycler.setHasFixedSize(true);
         recycler.setLayoutManager(new LinearLayoutManager(this));
         adapter = new LocationsAdapter();

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -11,10 +10,10 @@
         android:id="@+id/tv_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginTop="@dimen/tv_status_margin_top"
+        android:layout_marginBottom="@dimen/tv_status_margin_bottom"
         android:gravity="center"
-        android:text="Current status"/>
+        android:textSize="@dimen/tv_status_text_size"/>
 
     <ProgressBar
         android:id="@+id/progress_bar"
@@ -23,87 +22,101 @@
         android:layout_height="wrap_content"
         android:indeterminate="true"
         android:indeterminateTint="@color/colorPrimary"
-        android:visibility="invisible"
-        />
+        android:visibility="invisible"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/colorLocationsBackground">
+
+        <TextView
+            android:id="@+id/no_locations_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textSize="16sp"
+            android:text="@string/message_no_saved_locations"
+            android:visibility="gone"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/locations_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="@dimen/locations_list_padding_top_bottom"
+            android:paddingBottom="@dimen/locations_list_padding_top_bottom"/>
+
+    </FrameLayout>
 
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
+        android:layout_height="@dimen/layout_buttons_landscape_height"
+        android:orientation="horizontal"
+        android:baselineAligned="false">
 
         <FrameLayout
             android:layout_width="0dp"
-            android:layout_height="216dp"
-            android:layout_weight="4"
-            android:layout_marginTop="32dp">
+            android:layout_height="match_parent"
+            android:layout_weight="1">
 
-            <TextView
-                android:id="@+id/no_locations_textview"
-                android:layout_width="wrap_content"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/wipe_button"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="@dimen/button_width"
                 android:layout_height="wrap_content"
+                android:enabled="false"
                 android:layout_gravity="center"
-                android:textSize="16sp"
-                android:text="No saved locations"
-                android:visibility="gone"
-                />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/locations_recycler"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:text="@string/button_wipe_data"/>
 
         </FrameLayout>
 
-    <RelativeLayout
-        android:layout_width="0dp"
-        android:layout_height="120dp"
-        android:layout_weight="3"
-        android:layout_margin="40dp"
-        android:layout_gravity="center">
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/connect_button"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="@dimen/button_width"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:text="Connect" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/distance_button"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="@dimen/button_width"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:layout_gravity="center"
+                android:text="@string/button_distance"/>
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/save_button"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="@dimen/button_width"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
             android:enabled="false"
-            android:text="Save" />
+            android:layout_gravity="center"
+            android:text="@string/button_save"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/wipe_button"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="@dimen/button_width"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:enabled="false"
-            android:text="Wipe data" />
+        </FrameLayout>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/distance_button"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="@dimen/button_width"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentBottom="true"
-            android:enabled="false"
-            android:text="Distance" />
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
 
-    </RelativeLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/connect_button"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="@dimen/button_width"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/button_connect"/>
+
+        </FrameLayout>
 
     </LinearLayout>
-
 
 </LinearLayout>

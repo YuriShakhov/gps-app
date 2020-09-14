@@ -1,4 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="button_width">144dp</dimen>
+    <dimen name="button_margin_start_end">32dp</dimen>
+    <dimen name="button_margin_top_bottom">32dp</dimen>
+
+    <dimen name="card_location_height">64dp</dimen>
+    <dimen name="card_location_margin_top_bottom">8dp</dimen>
+    <dimen name="card_location_margin_start_end">16dp</dimen>
+    <dimen name="card_location_corner_radius">28dp</dimen>
+    <dimen name="card_location_elevation">2dp</dimen>
+
+    <dimen name="layout_buttons_landscape_height">72dp</dimen>
+    <dimen name="layout_buttons_portrait_height">172dp</dimen>
+
+    <dimen name="locations_list_padding_top_bottom">8dp</dimen>
+
+    <dimen name="no_locations_text_size">16sp</dimen>
+
+    <dimen name="tv_location_margin">8dp</dimen>
+
+    <dimen name="tv_status_margin_top">28dp</dimen>
+    <dimen name="tv_status_margin_bottom">12dp</dimen>
+    <dimen name="tv_status_text_size">14sp</dimen>
 </resources>

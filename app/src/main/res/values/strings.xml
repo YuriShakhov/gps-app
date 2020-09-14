@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">GPSApp</string>
-    <string name="hint_username">Username</string>
-    <string name="hint_password">Password</string>
-    <string name="button_sign_in">Sign in</string>
-    <string name="button_register">Register</string>
+    <string name="message_no_saved_locations">No saved locations</string>
+    <string name="button_wipe_data">Wipe data</string>
+    <string name="button_distance">Distance</string>
+    <string name="button_save">Save</string>
+    <string name="button_connect">Connect</string>
+    <string name="description_location_icon">Location icon</string>
 </resources>

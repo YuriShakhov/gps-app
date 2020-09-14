@@ -3,5 +3,6 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
-    <color name="loginPageBackgroundColor">#FFFFFF</color>
+    <color name="colorLocationIcon">#FF0000</color>
+    <color name="colorLocationsBackground">#E0E0E0</color>
 </resources>

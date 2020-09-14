@@ -6,16 +6,17 @@ import androidx.room.Room;
 
 import online.litterae.gps.storage.MyDatabase;
 
+import static online.litterae.gps.utils.Const.DATABASE_NAME;
+
 public class App extends Application {
     private static App app;
-    private static MyDatabase database;
-    private static final String DATABASE_NAME = "MyDatabase";
+    private static MyDatabase myDatabase;
 
     @Override
     public void onCreate() {
         super.onCreate();
         app = this;
-        database = Room.databaseBuilder(this, MyDatabase.class, DATABASE_NAME).build();
+        myDatabase = Room.databaseBuilder(this, MyDatabase.class, DATABASE_NAME).build();
     }
 
     public static App getApp() {
@@ -23,6 +24,6 @@ public class App extends Application {
     }
 
     public static MyDatabase getDatabase() {
-        return database;
+        return myDatabase;
     }
 }

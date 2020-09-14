@@ -9,6 +9,8 @@ public class Const {
     public static final int COMMAND_SHOW_MIN_MAX_DISTANCE = 3;
     public static final int COMMAND_CONNECT_SERVICE = 4;
 
+    public static final String DATABASE_NAME = "MyDatabase";
+
     public static final double LOCATION_GIVEN_LATITUDE = 55.724599;
     public static final double LOCATION_GIVEN_LONGITUDE = 37.633583;
 
@@ -23,8 +25,8 @@ public class Const {
 
     public static final int REQUEST_CODE_PERMISSION_LOCATION = 1;
 
-    public static final int SERVICE_DISCONNECTED = 1;
     public static final int SERVICE_CONNECTED = 2;
+    public static final int SERVICE_DISCONNECTED = 1;
     public static final int SERVICE_SAVING_LOCATION = 3;
 
     public static final String TAG = "MyTag";
