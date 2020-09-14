@@ -17,6 +17,11 @@ public class Const {
     public static final int LOCATIONS_EMPTY = 1;
     public static final int LOCATIONS_SAVED = 2;
 
+    public static final String NOTIFICATION_CHANNEL_ID = "GpsAppChannelId";
+    public static final String NOTIFICATION_CHANNEL_NAME = "GpsAppChannel";
+    public static final String NOTIFICATION_CONTENT_TITLE = "GpsApp is running in background";
+    public static final int NOTIFICATION_ID = 1;
+
     public static final String PARAM_COMMAND = "Command";
     public static final String PARAM_LOCATIONS = "Locations";
     public static final String PARAM_MIN_DISTANCE = "MinDistance";

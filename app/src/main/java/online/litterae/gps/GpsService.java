@@ -1,19 +1,20 @@
 package online.litterae.gps;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.gson.Gson;
@@ -34,6 +35,10 @@ import static online.litterae.gps.utils.Const.COMMAND_CONNECT_SERVICE;
 import static online.litterae.gps.utils.Const.COMMAND_SAVE_LOCATION;
 import static online.litterae.gps.utils.Const.COMMAND_SHOW_MIN_MAX_DISTANCE;
 import static online.litterae.gps.utils.Const.COMMAND_WIPE_DATA;
+import static online.litterae.gps.utils.Const.NOTIFICATION_CHANNEL_ID;
+import static online.litterae.gps.utils.Const.NOTIFICATION_CHANNEL_NAME;
+import static online.litterae.gps.utils.Const.NOTIFICATION_CONTENT_TITLE;
+import static online.litterae.gps.utils.Const.NOTIFICATION_ID;
 import static online.litterae.gps.utils.Const.PARAM_COMMAND;
 import static online.litterae.gps.utils.Const.PARAM_LOCATIONS;
 import static online.litterae.gps.utils.Const.PARAM_MAX_DISTANCE;
@@ -55,7 +60,8 @@ public class GpsService extends Service {
         int command = intent.getIntExtra(PARAM_COMMAND, 0);
         switch (command) {
             case COMMAND_CONNECT_SERVICE:
-                sendLocationsDisposable = storedLocationsProvider.subscribe(GpsService::sendLocations);
+                sendLocationsDisposable = storedLocationsProvider.subscribe(this::sendLocations);
+                startForegroundService();
                 break;
 
             case COMMAND_SAVE_LOCATION:
@@ -72,7 +78,7 @@ public class GpsService extends Service {
                 sendMinMaxDistance(storedLocationsProvider.getValue());
                 break;
         }
-        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
     @Override
@@ -81,14 +87,32 @@ public class GpsService extends Service {
         super.onDestroy();
     }
 
-    private static void sendLocations(List<MyLocation> myLocations) {
+    private void startForegroundService() {
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        Objects.requireNonNull(manager).createNotificationChannel(channel);
+
+        Notification.Builder notificationBuilder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID);
+        Notification notification = notificationBuilder.setOngoing(true)
+                .setSmallIcon(R.drawable.ic_gps_foreground)
+                .setContentTitle(NOTIFICATION_CONTENT_TITLE)
+                .setCategory(Notification.CATEGORY_SERVICE)
+                .setContentIntent(pendingIntent)
+                .build();
+        startForeground(NOTIFICATION_ID, notification);
+    }
+
+    private void sendLocations(List<MyLocation> myLocations) {
         Intent updateLocationsIntent = new Intent(ACTION_UPDATE_GPS_LOCATIONS);
         String myLocationsJson = new Gson().toJson(myLocations);
         updateLocationsIntent.putExtra(PARAM_LOCATIONS, myLocationsJson);
         LocalBroadcastManager.getInstance(App.getApp()).sendBroadcast(updateLocationsIntent);
     }
 
-    private static void sendMinMaxDistance(List<MyLocation> myLocations) {
+    private void sendMinMaxDistance(List<MyLocation> myLocations) {
         Intent sendMinMaxDistanceIntent = new Intent(ACTION_MIN_MAX_DISTANCE);
         sendMinMaxDistanceIntent.putExtra(PARAM_MIN_DISTANCE, Calculator.getMinDistance(myLocations));
         sendMinMaxDistanceIntent.putExtra(PARAM_MAX_DISTANCE, Calculator.getMaxDistance(myLocations));

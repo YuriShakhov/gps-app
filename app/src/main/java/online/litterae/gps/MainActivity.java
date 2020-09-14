@@ -244,9 +244,9 @@ public class MainActivity extends AppCompatActivity {
         locationList = list;
         adapter.notifyDataSetChanged();
         if (locationList.isEmpty()) {
-            setDataStatus(LOCATIONS_EMPTY);
+            showDataStatus(LOCATIONS_EMPTY);
         } else {
-            setDataStatus(LOCATIONS_SAVED);
+            showDataStatus(LOCATIONS_SAVED);
             recycler.smoothScrollToPosition(locationList.size() - 1);
         }
     }
@@ -337,7 +337,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setDataStatus(int dataStatus) {
+    private void showDataStatus(int dataStatus) {
         switch (dataStatus) {
             case LOCATIONS_EMPTY : {
                 recycler.setVisibility(View.GONE);
