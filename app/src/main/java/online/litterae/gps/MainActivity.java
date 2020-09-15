@@ -1,13 +1,5 @@
 package online.litterae.gps;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -26,6 +18,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -37,13 +37,15 @@ import online.litterae.gps.storage.MyLocation;
 
 import static online.litterae.gps.utils.Const.ACTION_MIN_MAX_DISTANCE;
 import static online.litterae.gps.utils.Const.ACTION_UPDATE_GPS_LOCATIONS;
-import static online.litterae.gps.utils.Const.LOCATIONS_EMPTY;
-import static online.litterae.gps.utils.Const.LOCATIONS_SAVED;
-import static online.litterae.gps.utils.Const.PARAM_COMMAND;
+import static online.litterae.gps.utils.Const.COMMAND_CHECK_UPDATE;
 import static online.litterae.gps.utils.Const.COMMAND_CONNECT_SERVICE;
 import static online.litterae.gps.utils.Const.COMMAND_SAVE_LOCATION;
 import static online.litterae.gps.utils.Const.COMMAND_SHOW_MIN_MAX_DISTANCE;
 import static online.litterae.gps.utils.Const.COMMAND_WIPE_DATA;
+import static online.litterae.gps.utils.Const.ERROR_NO_PERMISSION;
+import static online.litterae.gps.utils.Const.LOCATIONS_EMPTY;
+import static online.litterae.gps.utils.Const.LOCATIONS_SAVED;
+import static online.litterae.gps.utils.Const.PARAM_COMMAND;
 import static online.litterae.gps.utils.Const.PARAM_LOCATIONS;
 import static online.litterae.gps.utils.Const.PARAM_MAX_DISTANCE;
 import static online.litterae.gps.utils.Const.PARAM_MIN_DISTANCE;
@@ -55,12 +57,13 @@ import static online.litterae.gps.utils.Const.SERVICE_SAVING_LOCATION;
 import static online.litterae.gps.utils.Const.TEXT_ADDING_LOCATION;
 import static online.litterae.gps.utils.Const.TEXT_CONNECT;
 import static online.litterae.gps.utils.Const.TEXT_DISCONNECT;
+import static online.litterae.gps.utils.Const.TEXT_NO_SAVED_LOCATIONS;
 import static online.litterae.gps.utils.Const.TEXT_SERVICE_CONNECTED;
 import static online.litterae.gps.utils.Const.TEXT_SERVICE_DISCONNECTED;
 
 public class MainActivity extends AppCompatActivity {
-    private int serviceStatus = SERVICE_DISCONNECTED;
     private List<MyLocation> locationList = new ArrayList<>();
+    private int serviceStatus = SERVICE_DISCONNECTED;
 
     private LocalBroadcastManager broadcastManager;
     private BroadcastReceiver locationsReceiver;
@@ -111,19 +114,23 @@ public class MainActivity extends AppCompatActivity {
         distanceButton = findViewById(R.id.distance_button);
         distanceButton.setOnClickListener(v -> getMinMaxDistance());
 
-        if (savedInstanceState != null) {
-            serviceStatus = savedInstanceState.getInt(PARAM_SERVICE_STATUS);
-            String locationListJson = savedInstanceState.getString(PARAM_LOCATIONS);
-            showUpdatedLocations(gson.fromJson(locationListJson, locationsListType));
-        }
+        showServiceStatus(serviceStatus);
+    }
 
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        serviceStatus = savedInstanceState.getInt(PARAM_SERVICE_STATUS);
+        String locationListJson = savedInstanceState.getString(PARAM_LOCATIONS);
+
+        locationList = gson.fromJson(locationListJson, locationsListType);
+
+        showUpdatedLocations();
         showServiceStatus(serviceStatus);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
         locationsReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -131,13 +138,14 @@ public class MainActivity extends AppCompatActivity {
                         gson.fromJson(intent.getStringExtra(PARAM_LOCATIONS), locationsListType);
                 if (serviceStatus == SERVICE_SAVING_LOCATION
                         && receivedLocations != null
-                        && !receivedLocations.isEmpty()) {
+                        && receivedLocations.size() > locationList.size()
+                ) {
                     showServiceStatus(serviceStatus = SERVICE_CONNECTED);
                 }
-                showUpdatedLocations(receivedLocations);
+                locationList = receivedLocations;
+                showUpdatedLocations();
             }
         };
-
         minMaxDistanceReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -146,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
                 showMinMaxDistance(minDistance, maxDistance);
             }
         };
-
         broadcastManager = LocalBroadcastManager.getInstance(this);
         broadcastManager.registerReceiver(
                 locationsReceiver, new IntentFilter(ACTION_UPDATE_GPS_LOCATIONS)
@@ -154,6 +161,9 @@ public class MainActivity extends AppCompatActivity {
         broadcastManager.registerReceiver(
                 minMaxDistanceReceiver, new IntentFilter(ACTION_MIN_MAX_DISTANCE)
         );
+        if (serviceStatus != SERVICE_DISCONNECTED) {
+            checkUpdate();
+        }
     }
 
     @Override
@@ -174,26 +184,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CODE_PERMISSION_LOCATION) {
-            if (grantResults.length > 1
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startGpsService();
             } else {
-                showToast("Error: GPS service could not obtain requested permission");
+                showToast(ERROR_NO_PERMISSION);
             }
         }
     }
 
     private void requestLocationPermissions() {
         ActivityCompat.requestPermissions(MainActivity.this, new String[] {
-                Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_PERMISSION_LOCATION);
     }
 
     private boolean areLocationPermissionsGranted() {
         return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED;
     }
 
@@ -240,8 +245,13 @@ public class MainActivity extends AppCompatActivity {
         startService(distanceIntent);
     }
 
-    public void showUpdatedLocations(List<MyLocation> list){
-        locationList = list;
+    private void checkUpdate() {
+        Intent updateIntent = new Intent(this, GpsService.class);
+        updateIntent.putExtra(PARAM_COMMAND, COMMAND_CHECK_UPDATE);
+        startService(updateIntent);
+    }
+
+    public void showUpdatedLocations(){
         adapter.notifyDataSetChanged();
         if (locationList.isEmpty()) {
             showDataStatus(LOCATIONS_EMPTY);
@@ -255,56 +265,7 @@ public class MainActivity extends AppCompatActivity {
         if (minDistance >= 0 && maxDistance >= 0) {
             showToast("Minimum distance: " + minDistance + "m, \nmaximum distance: " + maxDistance + "m");
         } else {
-            showToast("No saved locations");
-        }
-    }
-
-    private void showToast(String message) {
-        Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
-        toast.setGravity(Gravity.CENTER, 0, 0);
-        toast.show();
-    }
-
-    class LocationsAdapter extends RecyclerView.Adapter<LocationsAdapter.LocationsViewholder> {
-
-        @NonNull
-        @Override
-        public LocationsViewholder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-            View itemView = inflater.inflate(R.layout.location, parent, false);
-            return new LocationsViewholder(itemView);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull LocationsViewholder holder, int position) {
-            MyLocation location = locationList.get(position);
-            double latitude = location.getLatitude();
-            double longitude = location.getLongitude();
-            StringBuilder locationSb = new StringBuilder();
-            if (longitude >= 0) {
-                locationSb.append(longitude).append("E");
-            } else {
-                locationSb.append(-longitude).append("W");
-            }
-            locationSb.append(", ");
-            if (latitude >= 0) {
-                locationSb.append(latitude).append("N");
-            } else {
-                locationSb.append(-latitude).append("S");
-            }
-            holder.locationText.setText(locationSb);
-        }
-
-        @Override
-        public int getItemCount() {
-            return locationList.size();
-        }
-
-        class LocationsViewholder extends RecyclerView.ViewHolder {
-            TextView locationText = itemView.findViewById(R.id.tv_location);
-            public LocationsViewholder(@NonNull View itemView) {
-                super(itemView);
-            }
+            showToast(TEXT_NO_SAVED_LOCATIONS);
         }
     }
 
@@ -352,6 +313,60 @@ public class MainActivity extends AppCompatActivity {
                 wipeButton.setEnabled(true);
                 distanceButton.setEnabled(true);
                 break;
+            }
+        }
+    }
+
+    public static String formatLocation(MyLocation location) {
+        double latitude = location.getLatitude();
+        double longitude = location.getLongitude();
+        StringBuilder locationSb = new StringBuilder();
+        if (longitude >= 0) {
+            locationSb.append(longitude).append("E");
+        } else {
+            locationSb.append(-longitude).append("W");
+        }
+        locationSb.append(",");
+        if (latitude >= 0) {
+            locationSb.append(latitude).append("N");
+        } else {
+            locationSb.append(-latitude).append("S");
+        }
+        return locationSb.toString();
+    }
+
+    private void showToast(String message) {
+        Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
+    }
+
+    private class LocationsAdapter extends RecyclerView.Adapter<LocationsAdapter.LocationsViewholder> {
+
+        @NonNull
+        @Override
+        public LocationsViewholder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+            View itemView = inflater.inflate(R.layout.location, parent, false);
+            return new LocationsViewholder(itemView);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull LocationsViewholder holder, int position) {
+            MyLocation location = locationList.get(position);
+            holder.locationText.setText(formatLocation(location));
+        }
+
+        @Override
+        public int getItemCount() {
+            return locationList.size();
+        }
+
+        private class LocationsViewholder extends RecyclerView.ViewHolder {
+            TextView locationText = itemView.findViewById(R.id.tv_location);
+
+            public LocationsViewholder(@NonNull View itemView) {
+                super(itemView);
             }
         }
     }

@@ -31,6 +31,7 @@ import online.litterae.gps.utils.Calculator;
 
 import static online.litterae.gps.utils.Const.ACTION_MIN_MAX_DISTANCE;
 import static online.litterae.gps.utils.Const.ACTION_UPDATE_GPS_LOCATIONS;
+import static online.litterae.gps.utils.Const.COMMAND_CHECK_UPDATE;
 import static online.litterae.gps.utils.Const.COMMAND_CONNECT_SERVICE;
 import static online.litterae.gps.utils.Const.COMMAND_SAVE_LOCATION;
 import static online.litterae.gps.utils.Const.COMMAND_SHOW_MIN_MAX_DISTANCE;
@@ -76,6 +77,11 @@ public class GpsService extends Service {
 
             case COMMAND_SHOW_MIN_MAX_DISTANCE:
                 sendMinMaxDistance(storedLocationsProvider.getValue());
+                break;
+
+            case COMMAND_CHECK_UPDATE:
+                sendLocationsDisposable.dispose();
+                sendLocationsDisposable = storedLocationsProvider.subscribe(this::sendLocations);
                 break;
         }
         return START_STICKY;

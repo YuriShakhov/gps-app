@@ -1,7 +1,5 @@
 package online.litterae.gps;
 
-import android.util.Log;
-
 import org.junit.Test;
 
 import java.util.ArrayList;
